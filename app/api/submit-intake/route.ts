@@ -4,7 +4,7 @@ import { Resend } from "resend";
 const resend = new Resend(process.env.RESEND_API_KEY);
  
 const CORS_HEADERS = {
-  "Access-Control-Allow-Origin": "https://daniellamendozafit.com",
+  "Access-Control-Allow-Origin": "https://www.daniellamendozafit.com",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type",
 };
