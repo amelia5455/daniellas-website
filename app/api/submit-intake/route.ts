@@ -1,8 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
-
+ 
 const resend = new Resend(process.env.RESEND_API_KEY);
-
+ 
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "https://daniellamendozafit.com",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+};
+ 
 const QUESTION_ORDER = [
   "Main Goal",
   "Age Range",
@@ -10,16 +16,23 @@ const QUESTION_ORDER = [
   "Biggest Motivation",
   "Openness to Coaching",
 ];
-
+ 
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 204, headers: CORS_HEADERS });
+}
+ 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const { name, email, phone, ...quizAnswers } = body as Record<string, string>;
-
+ 
     if (!name || !email || !phone) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Missing required fields" },
+        { status: 400, headers: CORS_HEADERS }
+      );
     }
-
+ 
     const answerRows = QUESTION_ORDER.map((label) => {
       const answer = quizAnswers[label] ?? "—";
       return `<tr>
@@ -27,7 +40,7 @@ export async function POST(req: NextRequest) {
         <td style="padding:10px 16px;color:#262626;border-bottom:1px solid #e8e2dc">${answer}</td>
       </tr>`;
     }).join("");
-
+ 
     const html = `
 <!DOCTYPE html>
 <html>
@@ -80,7 +93,7 @@ export async function POST(req: NextRequest) {
   </table>
 </body>
 </html>`;
-
+ 
     await resend.emails.send({
       from: "Daniella Mendoza <intake@daniellamendozafit.com>",
       to: "daniellamendoza05@icloud.com",
@@ -88,10 +101,15 @@ export async function POST(req: NextRequest) {
       subject: `New Client Inquiry from ${name}`,
       html,
     });
-
-    return NextResponse.json({ ok: true });
+ 
+    return NextResponse.json({ ok: true }, { headers: CORS_HEADERS });
+ 
   } catch (err) {
     console.error("submit-intake error:", err);
-    return NextResponse.json({ error: "Failed to send email" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to send email" },
+      { status: 500, headers: CORS_HEADERS }
+    );
   }
 }
+ 
